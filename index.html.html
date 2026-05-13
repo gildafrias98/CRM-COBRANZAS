@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CRM Cobranzas Bancarias · Evoltis</title>
+<style>
+  :root{
+    --azul:#0D2B55;--azul2:#1A56A0;--azul3:#2E86DE;
+    --verde:#2DC653;--rojo:#E63946;--amarillo:#FFB703;
+    --gris:#F4F6FA;--borde:#C8D0DC;--texto:#1C1C2E;
+    --blanco:#fff;--sidebar:240px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;}
+  body{display:flex;height:100vh;background:var(--gris);color:var(--texto);}
+
+  /* ── SIDEBAR ── */
+  #sidebar{width:var(--sidebar);background:var(--azul);display:flex;flex-direction:column;
+    box-shadow:2px 0 10px rgba(0,0,0,.25);z-index:10;}
+  .brand{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,.1);}
+  .brand h2{color:#fff;font-size:16px;letter-spacing:.5px;}
+  .brand p{color:#7EB3F5;font-size:11px;margin-top:2px;}
+  nav{flex:1;padding:12px 0;}
+  nav a{display:flex;align-items:center;gap:10px;padding:11px 18px;color:rgba(255,255,255,.75);
+    text-decoration:none;font-size:13px;cursor:pointer;transition:all .2s;}
+  nav a:hover,nav a.active{background:rgba(255,255,255,.12);color:#fff;border-left:3px solid var(--azul3);}
+  nav a .ico{font-size:16px;width:20px;text-align:center;}
+  .badge{background:var(--rojo);color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:auto;}
+  .sidebar-footer{padding:14px 16px;border-top:1px solid rgba(255,255,255,.1);}
+  .agent-chip{display:flex;align-items:center;gap:10px;}
+  .avatar{width:34px;height:34px;border-radius:50%;background:var(--azul3);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;}
+  .agent-chip .name{color:#fff;font-size:12px;}
+  .agent-chip .role{color:#7EB3F5;font-size:10px;}
+
+  /* ── MAIN ── */
+  #main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{background:#fff;border-bottom:1px solid var(--borde);padding:12px 24px;
+    display:flex;align-items:center;justify-content:space-between;}
+  .topbar h1{font-size:18px;color:var(--azul);}
+  .topbar-right{display:flex;gap:10px;align-items:center;}
+  .btn{padding:7px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:.2s;}
+  .btn-primary{background:var(--azul2);color:#fff;}
+  .btn-primary:hover{background:var(--azul);}
+  .btn-outline{background:#fff;border:1.5px solid var(--azul2);color:var(--azul2);}
+  .btn-success{background:var(--verde);color:#fff;}
+  .btn-danger{background:var(--rojo);color:#fff;}
+  .btn-sm{padding:4px 10px;font-size:12px;}
+
+  /* ── CONTENT ── */
+  #content{flex:1;overflow-y:auto;padding:24px;}
+
+  /* ── PANELS ── */
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  /* ── DASHBOARD ── */
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+  .kpi-card{background:#fff;border-radius:10px;padding:18px;border:1px solid var(--borde);
+    box-shadow:0 1px 4px rgba(0,0,0,.06);}
+  .kpi-card .kpi-val{font-size:32px;font-weight:700;color:var(--azul);}
+  .kpi-card .kpi-lbl{font-size:12px;color:#6B7C93;margin-top:2px;}
+  .kpi-card .kpi-trend{font-size:11px;margin-top:6px;}
+  .trend-up{color:var(--verde);}
+  .trend-dn{color:var(--rojo);}
+
+  .dash-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+  .card{background:#fff;border-radius:10px;padding:18px;border:1px solid var(--borde);
+    box-shadow:0 1px 4px rgba(0,0,0,.06);}
+  .card h3{font-size:14px;color:var(--azul);margin-bottom:14px;padding-bottom:8px;
+    border-bottom:1px solid var(--gris);}
+
+  .alert-item{display:flex;align-items:center;gap:10px;padding:8px 0;
+    border-bottom:1px solid var(--gris);font-size:13px;}
+  .alert-item:last-child{border:none;}
+  .alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .dot-red{background:var(--rojo);}
+  .dot-amber{background:var(--amarillo);}
+  .dot-green{background:var(--verde);}
+
+  /* ── TABLA COMÚN ── */
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{background:var(--azul);color:#fff;padding:9px 12px;text-align:left;font-size:12px;}
+  tbody tr{border-bottom:1px solid var(--gris);}
+  tbody tr:hover{background:var(--gris);}
+  tbody td{padding:9px 12px;vertical-align:middle;}
+  .chip{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;}
+  .chip-green{background:#D4EDDA;color:#155724;}
+  .chip-red{background:#F8D7DA;color:#721C24;}
+  .chip-amber{background:#FFF3CD;color:#856404;}
+  .chip-blue{background:#CCE5FF;color:#004085;}
+  .chip-gray{background:#E2E3E5;color:#383D41;}
+
+  /* ── BANDEJA ── */
+  .inbox-layout{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 120px);gap:0;
+    background:#fff;border-radius:10px;border:1px solid var(--borde);overflow:hidden;}
+  .conv-list{border-right:1px solid var(--borde);overflow-y:auto;}
+  .conv-search{padding:12px;border-bottom:1px solid var(--borde);}
+  .conv-search input{width:100%;padding:8px 12px;border:1px solid var(--borde);
+    border-radius:6px;font-size:13px;outline:none;}
+  .conv-item{padding:12px 14px;border-bottom:1px solid var(--gris);cursor:pointer;transition:.15s;}
+  .conv-item:hover,.conv-item.active{background:#EEF3FB;}
+  .conv-item .ci-top{display:flex;justify-content:space-between;align-items:center;}
+  .ci-name{font-weight:600;font-size:13px;}
+  .ci-time{font-size:11px;color:#6B7C93;}
+  .ci-preview{font-size:12px;color:#6B7C93;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ci-tags{margin-top:5px;display:flex;gap:4px;flex-wrap:wrap;}
+
+  .chat-area{display:flex;flex-direction:column;}
+  .chat-header{padding:14px 18px;border-bottom:1px solid var(--borde);
+    display:flex;justify-content:space-between;align-items:center;}
+  .chat-name{font-weight:700;font-size:15px;color:var(--azul);}
+  .chat-sub{font-size:12px;color:#6B7C93;}
+  .chat-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;background:#F7F9FC;}
+  .msg{max-width:70%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5;}
+  .msg-in{background:#fff;border:1px solid var(--borde);align-self:flex-start;border-radius:0 12px 12px 12px;}
+  .msg-out{background:var(--azul2);color:#fff;align-self:flex-end;border-radius:12px 0 12px 12px;}
+  .msg-time{font-size:10px;opacity:.6;margin-top:4px;}
+  .chat-input{padding:12px 16px;border-top:1px solid var(--borde);display:flex;gap:8px;align-items:center;}
+  .chat-input input{flex:1;padding:10px 14px;border:1px solid var(--borde);border-radius:20px;
+    font-size:13px;outline:none;}
+  .chat-actions{padding:0 16px 10px;display:flex;gap:8px;flex-wrap:wrap;}
+
+  /* ── FICHA CLIENTE ── */
+  .client-layout{display:grid;grid-template-columns:300px 1fr;gap:16px;}
+  .client-card{background:#fff;border-radius:10px;border:1px solid var(--borde);
+    padding:20px;text-align:center;}
+  .client-avatar{width:70px;height:70px;border-radius:50%;background:var(--azul2);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;
+    font-weight:700;margin:0 auto 12px;}
+  .client-name{font-size:17px;font-weight:700;color:var(--azul);}
+  .client-id{font-size:12px;color:#6B7C93;margin-bottom:14px;}
+  .info-row{display:flex;justify-content:space-between;padding:7px 0;
+    border-bottom:1px solid var(--gris);font-size:13px;}
+  .info-row:last-child{border:none;}
+  .info-label{color:#6B7C93;}
+  .info-val{font-weight:600;}
+  .client-main{display:flex;flex-direction:column;gap:16px;}
+  .tabs{display:flex;gap:0;border-bottom:2px solid var(--borde);margin-bottom:16px;}
+  .tab{padding:8px 18px;cursor:pointer;font-size:13px;color:#6B7C93;border-bottom:2px solid transparent;
+    margin-bottom:-2px;transition:.2s;}
+  .tab.active{color:var(--azul2);border-color:var(--azul2);font-weight:600;}
+
+  /* ── ACUERDOS ── */
+  .acuerdo-card{background:#fff;border:1px solid var(--borde);border-radius:10px;
+    padding:16px;margin-bottom:12px;}
+  .ac-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .ac-title{font-weight:700;color:var(--azul);font-size:14px;}
+  .ac-body{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .ac-field label{font-size:11px;color:#6B7C93;display:block;margin-bottom:3px;}
+  .ac-field span{font-size:14px;font-weight:600;}
+
+  /* ── MODAL ── */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;
+    align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:#fff;border-radius:12px;padding:28px;width:520px;max-height:85vh;overflow-y:auto;
+    box-shadow:0 20px 60px rgba(0,0,0,.3);}
+  .modal h2{font-size:17px;color:var(--azul);margin-bottom:18px;padding-bottom:10px;
+    border-bottom:1px solid var(--borde);}
+  .form-group{margin-bottom:14px;}
+  .form-group label{display:block;font-size:12px;color:#6B7C93;margin-bottom:5px;font-weight:600;}
+  .form-group input,.form-group select,.form-group textarea{width:100%;padding:9px 12px;
+    border:1px solid var(--borde);border-radius:6px;font-size:13px;outline:none;}
+  .form-group textarea{resize:vertical;min-height:70px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;
+    padding-top:14px;border-top:1px solid var(--borde);}
+
+  /* ── PROGBAR ── */
+  .prog-bar{height:8px;background:var(--gris);border-radius:4px;overflow:hidden;margin-top:6px;}
+  .prog-fill{height:100%;border-radius:4px;transition:.5s;}
+
+  /* ── TOAST ── */
+  #toast{position:fixed;bottom:28px;right:28px;background:var(--azul);color:#fff;
+    padding:12px 20px;border-radius:8px;font-size:13px;opacity:0;
+    transform:translateY(20px);transition:.3s;z-index:999;pointer-events:none;}
+  #toast.show{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ──────────────────────────────────────────────────────────── -->
+<aside id="sidebar">
+  <div class="brand">
+    <h2>🏦 CRM Cobranzas</h2>
+    <p>Evoltis · Alpha Tech</p>
+  </div>
+  <nav>
+    <a class="active" onclick="showPanel('dashboard')">
+      <span class="ico">📊</span> Dashboard
+    </a>
+    <a onclick="showPanel('bandeja')">
+      <span class="ico">💬</span> Bandeja
+      <span class="badge">5</span>
+    </a>
+    <a onclick="showPanel('clientes')">
+      <span class="ico">👥</span> Clientes
+    </a>
+    <a onclick="showPanel('acuerdos')">
+      <span class="ico">🤝</span> Acuerdos
+    </a>
+    <a onclick="showPanel('pagos')">
+      <span class="ico">💳</span> Pagos & Cupones
+    </a>
+    <a onclick="showPanel('campanas')">
+      <span class="ico">📢</span> Campañas
+    </a>
+    <a onclick="showPanel('reportes')">
+      <span class="ico">📈</span> Reportes
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="agent-chip">
+      <div class="avatar">GF</div>
+      <div>
+        <div class="name">Gilda Frías</div>
+        <div class="role">Agente Senior · Online</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ── MAIN ─────────────────────────────────────────────────────────────── -->
+<div id="main">
+  <div class="topbar">
+    <h1 id="page-title">Dashboard</h1>
+    <div class="topbar-right">
+      <span style="font-size:12px;color:#6B7C93;">🕐 <span id="clock"></span></span>
+      <button class="btn btn-primary" onclick="openModal('nuevo-caso')">+ Nuevo caso</button>
+    </div>
+  </div>
+
+  <div id="content">
+
+    <!-- ════ DASHBOARD ════ -->
+    <div id="panel-dashboard" class="panel active">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-val" id="kpi-conv">148</div>
+          <div class="kpi-lbl">Conversaciones semana</div>
+          <div class="kpi-trend trend-up">↑ 12% vs semana ant.</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" style="color:var(--verde)" id="kpi-res">138</div>
+          <div class="kpi-lbl">Casos resueltos</div>
+          <div class="kpi-trend trend-up">↑ Tasa 93%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" style="color:var(--rojo)">14:57</div>
+          <div class="kpi-lbl">Tiempo resolución (hs)</div>
+          <div class="kpi-trend trend-dn">↓ Objetivo: &lt;6hs</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" style="color:var(--amarillo)">10</div>
+          <div class="kpi-lbl">Casos pendientes</div>
+          <div class="kpi-trend trend-dn">⚠ 3 vencen hoy</div>
+        </div>
+      </div>
+
+      <div class="dash-row">
+        <!-- Alertas -->
+        <div class="card">
+          <h3>🔔 Alertas Activas</h3>
+          <div class="alert-item">
+            <div class="alert-dot dot-red"></div>
+            <div>
+              <strong>MARTÍNEZ, Carlos</strong> — Plan vence en <strong>2 hs</strong> · No confirma asistencia
+              <div style="margin-top:4px">
+                <button class="btn btn-sm btn-primary" onclick="toast('Recordatorio enviado a Martínez')">Recordar</button>
+                <button class="btn btn-sm btn-outline" style="margin-left:4px">Ver caso</button>
+              </div>
+            </div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-dot dot-red"></div>
+            <div>
+              <strong>FERNÁNDEZ, Ana</strong> — Promesa de pago vence hoy · Cupón pendiente de envío
+              <div style="margin-top:4px">
+                <button class="btn btn-sm btn-success" onclick="toast('✅ Cupón generado y enviado por WhatsApp')">Generar cupón</button>
+              </div>
+            </div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-dot dot-amber"></div>
+            <div><strong>RODRÍGUEZ, Luis</strong> — Propuesta REFI caduca en 24 hs · Pendiente de respuesta</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-dot dot-amber"></div>
+            <div><strong>LÓPEZ, Sandra</strong> — 48 hs sin respuesta del cliente · Seguimiento requerido</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-dot dot-green"></div>
+            <div><strong>DÍAZ, Pablo</strong> — Acuerdo confirmado · Sucursal notificada automáticamente ✓</div>
+          </div>
+        </div>
+
+        <!-- Estado de casos -->
+        <div class="card">
+          <h3>📋 Estado de Casos Hoy</h3>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;">
+                <span>En gestión</span><strong>23</strong>
+              </div>
+              <div class="prog-bar"><div class="prog-fill" style="width:65%;background:var(--azul2)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;">
+                <span>Esperando sucursal</span><strong>7</strong>
+              </div>
+              <div class="prog-bar"><div class="prog-fill" style="width:20%;background:var(--amarillo)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;">
+                <span>Resueltos hoy</span><strong>19</strong>
+              </div>
+              <div class="prog-bar"><div class="prog-fill" style="width:54%;background:var(--verde)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;">
+                <span>Con promesa activa</span><strong>31</strong>
+              </div>
+              <div class="prog-bar"><div class="prog-fill" style="width:88%;background:var(--azul3)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;">
+                <span>Críticos / Por vencer</span><strong>3</strong>
+              </div>
+              <div class="prog-bar"><div class="prog-fill" style="width:8%;background:var(--rojo)"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conversaciones recientes -->
+      <div class="card">
+        <h3>💬 Conversaciones Recientes</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Cliente</th><th>Canal</th><th>Tipo</th><th>Estado</th><th>Tiempo</th><th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>MARTÍNEZ, Carlos A.</strong><br><span style="font-size:11px;color:#6B7C93">DNI 28.431.200</span></td>
+              <td>📱 WhatsApp</td>
+              <td>Refinanciación 35%</td>
+              <td><span class="chip chip-amber">En gestión</span></td>
+              <td>2h 14m</td>
+              <td><button class="btn btn-sm btn-primary" onclick="showPanel('clientes')">Ver</button></td>
+            </tr>
+            <tr>
+              <td><strong>FERNÁNDEZ, Ana B.</strong><br><span style="font-size:11px;color:#6B7C93">DNI 31.220.450</span></td>
+              <td>📧 Email</td>
+              <td>Promesa de pago</td>
+              <td><span class="chip chip-red">Cupón pendiente</span></td>
+              <td>5h 02m</td>
+              <td><button class="btn btn-sm btn-success" onclick="toast('✅ Cupón enviado a Fernández')">Cupón</button></td>
+            </tr>
+            <tr>
+              <td><strong>RODRÍGUEZ, Luis M.</strong><br><span style="font-size:11px;color:#6B7C93">DNI 25.887.001</span></td>
+              <td>📱 WhatsApp</td>
+              <td>Oferta caducidad</td>
+              <td><span class="chip chip-blue">Esperando cliente</span></td>
+              <td>1h 35m</td>
+              <td><button class="btn btn-sm btn-outline">Ver</button></td>
+            </tr>
+            <tr>
+              <td><strong>DÍAZ, Pablo R.</strong><br><span style="font-size:11px;color:#6B7C93">DNI 33.100.774</span></td>
+              <td>📱 WhatsApp</td>
+              <td>Refinanciación 45%</td>
+              <td><span class="chip chip-green">Resuelto</span></td>
+              <td>38m</td>
+              <td><button class="btn btn-sm btn-outline">Ver</button></td>
+            </tr>
+            <tr>
+              <td><strong>LÓPEZ, Sandra V.</strong><br><span style="font-size:11px;color:#6B7C93">DNI 29.554.321</span></td>
+              <td>📧 Email</td>
+              <td>Libre deuda</td>
+              <td><span class="chip chip-gray">Sin respuesta</span></td>
+              <td>3h 51m</td>
+              <td><button class="btn btn-sm btn-outline">Seguir</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ BANDEJA UNIFICADA ════ -->
+    <div id="panel-bandeja" class="panel">
+      <div class="inbox-layout">
+        <div class="conv-list">
+          <div class="conv-search">
+            <input type="text" placeholder="🔍 Buscar por nombre, DNI..."/>
+          </div>
+          <div style="padding:6px 14px;font-size:11px;color:#6B7C93;background:#F0F4FB;
+            display:flex;gap:8px;border-bottom:1px solid var(--borde);">
+            <span style="cursor:pointer;font-weight:600;color:var(--azul2)">Todos (14)</span>
+            <span style="cursor:pointer">📱 WA (9)</span>
+            <span style="cursor:pointer">📧 Email (5)</span>
+          </div>
+          <div id="conv-items"></div>
+        </div>
+        <div class="chat-area">
+          <div class="chat-header">
+            <div>
+              <div class="chat-name">MARTÍNEZ, Carlos A.</div>
+              <div class="chat-sub">📱 WhatsApp · DNI 28.431.200 · Mora 92 días · Deuda $847.320</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <span class="chip chip-amber">En gestión</span>
+              <button class="btn btn-sm btn-primary" onclick="showPanel('clientes')">Ver ficha</button>
+            </div>
+          </div>
+          <div class="chat-msgs" id="chat-msgs">
+            <div class="msg msg-in">
+              Hola, llamo porque recibí un mensaje sobre una propuesta de refinanciación. Quería consultar de qué se trata exactamente.
+              <div class="msg-time">Hoy 09:14</div>
+            </div>
+            <div class="msg msg-out">
+              Buen día, Carlos. Le contactamos porque tiene una deuda de $847.320 en mora de 92 días. Tenemos disponible para usted un plan de refinanciación con TNA del 35% que le permitiría regularizar su situación. ¿Desea que le explique las condiciones?
+              <div class="msg-time">Hoy 09:17</div>
+            </div>
+            <div class="msg msg-in">
+              Sí, por favor. ¿Cuántas cuotas serían?
+              <div class="msg-time">Hoy 09:19</div>
+            </div>
+            <div class="msg msg-out">
+              Podemos ofrecerle entre 6 y 12 cuotas. Con 12 cuotas, el monto de cada cuota sería de aproximadamente $94.500, con un adelanto inicial de $84.732 (10% de la deuda). ¿Le resulta conveniente?
+              <div class="msg-time">Hoy 09:22</div>
+            </div>
+            <div class="msg msg-in">
+              Podría ser. ¿Qué necesito hacer para aceptar?
+              <div class="msg-time">Hoy 10:38</div>
+            </div>
+          </div>
+          <div class="chat-actions">
+            <button class="btn btn-sm btn-success" onclick="toast('✅ Promesa de pago registrada. Cupón generado automáticamente.')">✅ Registrar promesa</button>
+            <button class="btn btn-sm btn-primary" onclick="toast('📋 Simulación de REFI enviada al cliente')">📋 Simular REFI</button>
+            <button class="btn btn-sm btn-outline" onclick="toast('🏦 Solicitud enviada a sucursal Bancor')">🏦 Enviar a sucursal</button>
+            <button class="btn btn-sm btn-outline" onclick="toast('🏷️ Tipificación guardada')">🏷️ Tipificar</button>
+          </div>
+          <div class="chat-input">
+            <input type="text" id="chat-text" placeholder="Escribir mensaje..." onkeydown="sendMsg(event)"/>
+            <button class="btn btn-primary" onclick="sendMsg({key:'Enter'})">Enviar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ CLIENTES ════ -->
+    <div id="panel-clientes" class="panel">
+      <div class="client-layout">
+        <!-- Ficha izquierda -->
+        <div>
+          <div class="client-card">
+            <div class="client-avatar">CM</div>
+            <div class="client-name">MARTÍNEZ, Carlos A.</div>
+            <div class="client-id">DNI 28.431.200 · CUIT 20-28431200-9</div>
+            <span class="chip chip-red">Mora prejudicial</span>
+            <hr style="margin:14px 0;border-color:var(--gris)">
+            <div class="info-row"><span class="info-label">Teléfono</span><span class="info-val">+54 9 351 4XX-XXXX</span></div>
+            <div class="info-row"><span class="info-label">Email</span><span class="info-val">c.martinez@mail.com</span></div>
+            <div class="info-row"><span class="info-label">Canal preferido</span><span class="info-val">📱 WhatsApp</span></div>
+            <div class="info-row"><span class="info-label">Mora actual</span><span class="info-val" style="color:var(--rojo)">92 días</span></div>
+            <div class="info-row"><span class="info-label">Deuda total</span><span class="info-val" style="color:var(--rojo)">$847.320</span></div>
+            <div class="info-row"><span class="info-label">Producto</span><span class="info-val">Préstamo Personal</span></div>
+            <div class="info-row"><span class="info-label">Segmento</span><span class="info-val">Campaña 35%</span></div>
+            <div class="info-row"><span class="info-label">Asignado a</span><span class="info-val">Gilda Frías</span></div>
+          </div>
+          <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">
+            <button class="btn btn-primary" style="width:100%" onclick="toast('📋 Nueva REFI simulada')">+ Simular refinanciación</button>
+            <button class="btn btn-success" style="width:100%" onclick="toast('✅ Promesa registrada. Cupón enviado.')">✅ Registrar promesa</button>
+            <button class="btn btn-outline" style="width:100%" onclick="toast('🏦 Enviado a sucursal Bancor')">🏦 Enviar a sucursal</button>
+          </div>
+        </div>
+
+        <!-- Detalle derecha -->
+        <div class="client-main">
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab(this,'tab-historial')">Historial</div>
+            <div class="tab" onclick="switchTab(this,'tab-deuda')">Deuda</div>
+            <div class="tab" onclick="switchTab(this,'tab-acuerdos')">Acuerdos</div>
+            <div class="tab" onclick="switchTab(this,'tab-pagos')">Pagos</div>
+          </div>
+
+          <div id="tab-historial">
+            <div class="card" style="margin-bottom:10px;">
+              <h3>📋 Historial de Interacciones</h3>
+              <table>
+                <thead>
+                  <tr><th>Fecha</th><th>Canal</th><th>Tipo</th><th>Resultado</th><th>Agente</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>13/05/2026 09:14</td><td>📱 WhatsApp</td><td>Refinanciación 35%</td><td><span class="chip chip-amber">En negociación</span></td><td>G. Frías</td></tr>
+                  <tr><td>08/05/2026 14:30</td><td>📱 WhatsApp</td><td>Campaña caducidad</td><td><span class="chip chip-red">No interesado</span></td><td>G. Frías</td></tr>
+                  <tr><td>02/05/2026 11:00</td><td>📧 Email</td><td>Recordatorio mora</td><td><span class="chip chip-gray">Sin respuesta</span></td><td>Sistema</td></tr>
+                  <tr><td>22/04/2026 10:15</td><td>📱 WhatsApp</td><td>Promesa pago</td><td><span class="chip chip-red">Incumplida</span></td><td>G. Frías</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="tab-deuda" style="display:none;">
+            <div class="card">
+              <h3>💰 Detalle de Deuda</h3>
+              <table>
+                <thead>
+                  <tr><th>Producto</th><th>Capital</th><th>Intereses</th><th>Total</th><th>Mora</th><th>Acceso plan</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Préstamo Personal #4412</td>
+                    <td>$620.000</td>
+                    <td>$227.320</td>
+                    <td style="font-weight:700;color:var(--rojo)">$847.320</td>
+                    <td>92 días</td>
+                    <td><span class="chip chip-green">✓ Apto (60+ días)</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="tab-acuerdos" style="display:none;">
+            <div class="card">
+              <h3>🤝 Acuerdos y Refinanciaciones</h3>
+              <div class="acuerdo-card">
+                <div class="ac-header">
+                  <div class="ac-title">REFI simulada - Plan 12 cuotas 35% TNA</div>
+                  <span class="chip chip-amber">En negociación</span>
+                </div>
+                <div class="ac-body">
+                  <div class="ac-field"><label>Adelanto inicial</label><span>$84.732 (10%)</span></div>
+                  <div class="ac-field"><label>Cuota mensual</label><span>$94.500</span></div>
+                  <div class="ac-field"><label>Total a pagar</label><span>$1.219.232</span></div>
+                  <div class="ac-field"><label>TNA</label><span>35%</span></div>
+                  <div class="ac-field"><label>Cuotas</label><span>12</span></div>
+                  <div class="ac-field"><label>Vencimiento propuesta</label><span>15/05/2026</span></div>
+                </div>
+                <div style="margin-top:12px;display:flex;gap:8px;">
+                  <button class="btn btn-sm btn-success" onclick="toast('✅ Acuerdo confirmado. Enviando a sucursal...')">Confirmar acuerdo</button>
+                  <button class="btn btn-sm btn-outline">Modificar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="tab-pagos" style="display:none;">
+            <div class="card">
+              <h3>💳 Pagos y Cupones</h3>
+              <table>
+                <thead>
+                  <tr><th>Fecha</th><th>Monto</th><th>Tipo</th><th>Estado</th><th>Comprobante</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>22/04/2026</td>
+                    <td>$84.732</td>
+                    <td>Promesa — Cupón</td>
+                    <td><span class="chip chip-red">Incumplida</span></td>
+                    <td>—</td>
+                  </tr>
+                  <tr>
+                    <td>15/03/2026</td>
+                    <td>$50.000</td>
+                    <td>Pago parcial</td>
+                    <td><span class="chip chip-green">Acreditado</span></td>
+                    <td>CP-2026-0412</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style="margin-top:14px;">
+                <button class="btn btn-primary" onclick="openModal('nuevo-cupon')">+ Generar nuevo cupón</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ ACUERDOS ════ -->
+    <div id="panel-acuerdos" class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div></div>
+        <button class="btn btn-primary" onclick="openModal('nuevo-acuerdo')">+ Nuevo acuerdo</button>
+      </div>
+      <div class="card">
+        <h3>🤝 Gestión de Acuerdos y Refinanciaciones</h3>
+        <table>
+          <thead>
+            <tr><th>Cliente</th><th>Tipo</th><th>TNA</th><th>Cuotas</th><th>Monto total</th><th>Estado</th><th>Vencimiento</th><th>Acciones</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>MARTÍNEZ, Carlos</strong></td>
+              <td>REFI 35%</td>
+              <td>35%</td>
+              <td>12</td>
+              <td>$1.219.232</td>
+              <td><span class="chip chip-amber">En negociación</span></td>
+              <td>15/05/2026</td>
+              <td>
+                <button class="btn btn-sm btn-success" onclick="toast('✅ Acuerdo confirmado. Notificando sucursal...')">Confirmar</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>DÍAZ, Pablo</strong></td>
+              <td>REFI 45%</td>
+              <td>45%</td>
+              <td>6</td>
+              <td>$432.000</td>
+              <td><span class="chip chip-green">Confirmado</span></td>
+              <td>16/05/2026</td>
+              <td>
+                <button class="btn btn-sm btn-outline" onclick="toast('🏦 Notificación a sucursal reenviada')">Re-notificar</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>GÓMEZ, María</strong></td>
+              <td>REFI 30%</td>
+              <td>30%</td>
+              <td>18</td>
+              <td>$2.104.500</td>
+              <td><span class="chip chip-blue">Enviado sucursal</span></td>
+              <td>17/05/2026</td>
+              <td>
+                <button class="btn btn-sm btn-outline">Seguimiento</button>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>HERRERA, Jorge</strong></td>
+              <td>REFI 20%</td>
+              <td>20%</td>
+              <td>24</td>
+              <td>$980.000</td>
+              <td><span class="chip chip-red">Vencido</span></td>
+              <td>10/05/2026</td>
+              <td>
+                <button class="btn btn-sm btn-primary" onclick="toast('📋 Nueva simulación iniciada para Herrera')">Renegociar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ PAGOS & CUPONES ════ -->
+    <div id="panel-pagos" class="panel">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+        <button class="btn btn-primary" onclick="openModal('nuevo-cupon')">+ Generar cupón</button>
+      </div>
+      <div class="card">
+        <h3>💳 Cupones y Promesas de Pago</h3>
+        <table>
+          <thead>
+            <tr><th>ID Cupón</th><th>Cliente</th><th>Monto</th><th>Canal envío</th><th>Tipo</th><th>Estado</th><th>Vencimiento</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>CUP-2026-0891</td>
+              <td>FERNÁNDEZ, Ana</td>
+              <td>$235.000</td>
+              <td>📱 WhatsApp</td>
+              <td>Promesa total</td>
+              <td><span class="chip chip-amber">Pendiente</span></td>
+              <td>13/05/2026 ⚠</td>
+            </tr>
+            <tr>
+              <td>CUP-2026-0890</td>
+              <td>DÍAZ, Pablo</td>
+              <td>$72.000</td>
+              <td>📧 Email</td>
+              <td>Adelanto REFI</td>
+              <td><span class="chip chip-green">Enviado</span></td>
+              <td>16/05/2026</td>
+            </tr>
+            <tr>
+              <td>CUP-2026-0885</td>
+              <td>CASTRO, Rosa</td>
+              <td>$150.000</td>
+              <td>📱 WhatsApp</td>
+              <td>Promesa parcial</td>
+              <td><span class="chip chip-green">Acreditado</span></td>
+              <td>10/05/2026</td>
+            </tr>
+            <tr>
+              <td>CUP-2026-0871</td>
+              <td>HERRERA, Jorge</td>
+              <td>$490.000</td>
+              <td>📱 WhatsApp</td>
+              <td>Adelanto REFI</td>
+              <td><span class="chip chip-red">Vencido</span></td>
+              <td>10/05/2026</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ CAMPAÑAS ════ -->
+    <div id="panel-campanas" class="panel">
+      <div class="card">
+        <h3>📢 Campañas Activas</h3>
+        <table>
+          <thead>
+            <tr><th>Campaña</th><th>Segmento</th><th>Impactados</th><th>Respondieron</th><th>En gestión</th><th>Tasa contacto</th><th>Estado</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>REFI 35% TNA</strong></td>
+              <td>Mora 60-90 días</td>
+              <td>842</td>
+              <td>213</td>
+              <td>47</td>
+              <td>25.3%</td>
+              <td><span class="chip chip-green">Activa</span></td>
+            </tr>
+            <tr>
+              <td><strong>Oferta caducidad</strong></td>
+              <td>Propuesta &gt;30 días</td>
+              <td>156</td>
+              <td>89</td>
+              <td>23</td>
+              <td>57.1%</td>
+              <td><span class="chip chip-green">Activa</span></td>
+            </tr>
+            <tr>
+              <td><strong>REFI 45% TNA</strong></td>
+              <td>Mora 45-60 días</td>
+              <td>320</td>
+              <td>78</td>
+              <td>31</td>
+              <td>24.4%</td>
+              <td><span class="chip chip-amber">En pausa</span></td>
+            </tr>
+            <tr>
+              <td><strong>REFI 20% TNA Premium</strong></td>
+              <td>Mora 90+ días</td>
+              <td>95</td>
+              <td>41</td>
+              <td>18</td>
+              <td>43.2%</td>
+              <td><span class="chip chip-blue">Segmentando</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ REPORTES ════ -->
+    <div id="panel-reportes" class="panel">
+      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="kpi-card">
+          <div class="kpi-val" style="color:var(--verde)">93%</div>
+          <div class="kpi-lbl">Tasa de resolución semanal</div>
+          <div class="kpi-trend trend-up">↑ +3% vs semana anterior</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val">3:55</div>
+          <div class="kpi-lbl">Tiempo primera respuesta (min)</div>
+          <div class="kpi-trend trend-up">↑ Dentro de SLA</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-val" style="color:var(--rojo)">14:57</div>
+          <div class="kpi-lbl">Tiempo resolución promedio (hs)</div>
+          <div class="kpi-trend trend-dn">↓ Objetivo: 6 hs</div>
+        </div>
+      </div>
+      <div class="dash-row">
+        <div class="card">
+          <h3>📊 Conversaciones por Canal — Semana 07-14 May</h3>
+          <div style="padding:10px 0;">
+            <div style="margin-bottom:12px;">
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+                <span>📱 WhatsApp</span><strong>89 conv. (60%)</strong>
+              </div>
+              <div class="prog-bar" style="height:12px;"><div class="prog-fill" style="width:60%;background:var(--verde)"></div></div>
+            </div>
+            <div style="margin-bottom:12px;">
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+                <span>📧 Email</span><strong>59 conv. (40%)</strong>
+              </div>
+              <div class="prog-bar" style="height:12px;"><div class="prog-fill" style="width:40%;background:var(--azul2)"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>🤝 Distribución de Casos por Tipo</h3>
+          <div style="padding:10px 0;">
+            <div style="margin-bottom:10px;">
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+                <span>Refinanciaciones</span><strong>37 (25%)</strong>
+              </div>
+              <div class="prog-bar" style="height:10px;"><div class="prog-fill" style="width:25%;background:var(--azul2)"></div></div>
+            </div>
+            <div style="margin-bottom:10px;">
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+                <span>Promesas de pago</span><strong>30 (20%)</strong>
+              </div>
+              <div class="prog-bar" style="height:10px;"><div class="prog-fill" style="width:20%;background:var(--verde)"></div></div>
+            </div>
+            <div style="margin-bottom:10px;">
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+                <span>Consultas generales</span><strong>81 (55%)</strong>
+              </div>
+              <div class="prog-bar" style="height:10px;"><div class="prog-fill" style="width:55%;background:var(--amarillo)"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ── MODAL: NUEVO CASO ─────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-nuevo-caso">
+  <div class="modal">
+    <h2>+ Nuevo Caso</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>DNI / CUIT</label>
+        <input type="text" placeholder="Ej: 28431200" oninput="autoFill(this)"/>
+      </div>
+      <div class="form-group">
+        <label>Canal de contacto</label>
+        <select><option>📱 WhatsApp</option><option>📧 Email</option><option>📞 Teléfono</option></select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Nombre del cliente</label>
+      <input type="text" id="ff-nombre" placeholder="Se autocompleta al ingresar DNI"/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Tipo de gestión</label>
+        <select>
+          <option>Refinanciación</option>
+          <option>Promesa de pago</option>
+          <option>Consulta general</option>
+          <option>Libre deuda</option>
+          <option>Oferta caducidad</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Campaña asociada</label>
+        <select>
+          <option>REFI 35% TNA</option>
+          <option>REFI 45% TNA</option>
+          <option>REFI 20% TNA Premium</option>
+          <option>Oferta caducidad</option>
+          <option>— Sin campaña —</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Observaciones iniciales</label>
+      <textarea placeholder="Notas adicionales sobre el caso..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('nuevo-caso')">Cancelar</button>
+      <button class="btn btn-primary" onclick="closeModal('nuevo-caso');toast('✅ Caso creado. Cliente asignado.')">Crear caso</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: NUEVO CUPÓN ────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-nuevo-cupon">
+  <div class="modal">
+    <h2>💳 Generar Cupón de Pago</h2>
+    <div class="form-group">
+      <label>Cliente</label>
+      <input type="text" value="MARTÍNEZ, Carlos A."/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Monto del cupón</label>
+        <input type="number" placeholder="$0.00"/>
+      </div>
+      <div class="form-group">
+        <label>Tipo de pago</label>
+        <select>
+          <option>Promesa total</option>
+          <option>Adelanto REFI</option>
+          <option>Promesa parcial</option>
+          <option>Cuota de plan</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Vencimiento</label>
+        <input type="date"/>
+      </div>
+      <div class="form-group">
+        <label>Canal de envío</label>
+        <select><option>📱 WhatsApp</option><option>📧 Email</option><option>Ambos</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('nuevo-cupon')">Cancelar</button>
+      <button class="btn btn-success" onclick="closeModal('nuevo-cupon');toast('✅ Cupón generado y enviado automáticamente al cliente')">Generar y enviar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: NUEVO ACUERDO ──────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-nuevo-acuerdo">
+  <div class="modal">
+    <h2>🤝 Nuevo Acuerdo / Refinanciación</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Cliente</label>
+        <input type="text" placeholder="Buscar cliente..."/>
+      </div>
+      <div class="form-group">
+        <label>Tipo de plan</label>
+        <select>
+          <option>REFI 35% TNA</option>
+          <option>REFI 45% TNA</option>
+          <option>REFI 30% TNA</option>
+          <option>REFI 20% TNA Premium</option>
+          <option>REFI 90% TNA</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Monto total deuda</label>
+        <input type="number" placeholder="$0"/>
+      </div>
+      <div class="form-group">
+        <label>Cantidad de cuotas</label>
+        <select><option>6</option><option>12</option><option>18</option><option>24</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>% Adelanto inicial</label>
+        <input type="number" value="10" min="0" max="100"/>
+      </div>
+      <div class="form-group">
+        <label>Fecha límite propuesta</label>
+        <input type="date"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Observaciones</label>
+      <textarea placeholder="Condiciones especiales, restricciones, notas de negociación..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('nuevo-acuerdo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="closeModal('nuevo-acuerdo');toast('📋 Acuerdo creado. Simulación enviada al cliente.')">Crear y enviar simulación</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── NAVIGATION ──────────────────────────────────────────────────────────────
+const titles={dashboard:'Dashboard',bandeja:'Bandeja Unificada',
+  clientes:'Ficha del Cliente',acuerdos:'Acuerdos & Refinanciaciones',
+  pagos:'Pagos & Cupones',campanas:'Campañas',reportes:'Reportes'};
+
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('page-title').textContent=titles[id]||id;
+}
+
+// ── TABS ────────────────────────────────────────────────────────────────────
+function switchTab(el,target){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['tab-historial','tab-deuda','tab-acuerdos','tab-pagos'].forEach(t=>{
+    const el2=document.getElementById(t);
+    if(el2) el2.style.display=t===target?'block':'none';
+  });
+}
+
+// ── MODALS ──────────────────────────────────────────────────────────────────
+function openModal(id){document.getElementById('modal-'+id).classList.add('open');}
+function closeModal(id){document.getElementById('modal-'+id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
+});
+
+// ── TOAST ───────────────────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ── CHAT ────────────────────────────────────────────────────────────────────
+function sendMsg(e){
+  if(e.key!=='Enter') return;
+  const inp=document.getElementById('chat-text');
+  const txt=inp.value.trim();
+  if(!txt) return;
+  const msgs=document.getElementById('chat-msgs');
+  const div=document.createElement('div');
+  div.className='msg msg-out';
+  const now=new Date();
+  div.innerHTML=txt+'<div class="msg-time">'+now.getHours()+':'+String(now.getMinutes()).padStart(2,'0')+'</div>';
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  inp.value='';
+}
+
+// ── CONVERSATIONS ───────────────────────────────────────────────────────────
+const convs=[
+  {name:'MARTÍNEZ, Carlos',ch:'📱',tag:'REFI 35%',prev:'¿Cuántas cuotas serían?',t:'10:38',color:'chip-amber',active:true},
+  {name:'FERNÁNDEZ, Ana',ch:'📧',tag:'Promesa',prev:'Adjunto comprobante',t:'10:15',color:'chip-red'},
+  {name:'RODRÍGUEZ, Luis',ch:'📱',tag:'Caducidad',prev:'Ok, lo pienso',t:'09:55',color:'chip-blue'},
+  {name:'GÓMEZ, María',ch:'📧',tag:'REFI 30%',prev:'¿Qué documentación necesito?',t:'09:30',color:'chip-green'},
+  {name:'DÍAZ, Pablo',ch:'📱',tag:'REFI 45%',prev:'Confirmado, voy mañana',t:'09:10',color:'chip-green'},
+  {name:'LÓPEZ, Sandra',ch:'📧',tag:'Libre deuda',prev:'Necesito el certificado',t:'08:55',color:'chip-gray'},
+  {name:'CASTRO, Rosa',ch:'📱',tag:'Promesa',prev:'Sí, puedo pagar el viernes',t:'Ayer',color:'chip-amber'},
+  {name:'HERRERA, Jorge',ch:'📱',tag:'REFI 20%',prev:'Vencido, renegociar',t:'Ayer',color:'chip-red'},
+];
+const list=document.getElementById('conv-items');
+convs.forEach((c,i)=>{
+  list.innerHTML+=`<div class="conv-item${c.active?' active':''}" onclick="selectConv(this)">
+    <div class="ci-top">
+      <span class="ci-name">${c.ch} ${c.name}</span>
+      <span class="ci-time">${c.t}</span>
+    </div>
+    <div class="ci-preview">${c.prev}</div>
+    <div class="ci-tags"><span class="chip ${c.color}">${c.tag}</span></div>
+  </div>`;
+});
+function selectConv(el){
+  document.querySelectorAll('.conv-item').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── AUTO FILL ───────────────────────────────────────────────────────────────
+function autoFill(inp){
+  if(inp.value.length>=6){
+    document.getElementById('ff-nombre').value='MARTÍNEZ, Carlos A. (simulado)';
+  }
+}
+
+// ── CLOCK ───────────────────────────────────────────────────────────────────
+function updateClock(){
+  const now=new Date();
+  document.getElementById('clock').textContent=
+    now.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock,1000);
+updateClock();
+</script>
+</body>
+</html>
